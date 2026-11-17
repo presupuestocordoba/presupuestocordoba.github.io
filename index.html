@@ -52,6 +52,7 @@ nav.sec a:hover,nav.sec a:focus-visible{border-color:var(--accent);color:var(--a
 .seg button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink);padding:6px 11px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
 .seg button:disabled{opacity:.4;cursor:not-allowed}
+.seg button small{font-size:11px;opacity:.75}
 .ctl-label{font-size:12px;color:var(--muted);margin-right:4px}
 button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .notice{font-size:13px;background:var(--accent-soft);border-left:3px solid var(--accent);padding:8px 12px;border-radius:4px;margin:0}
@@ -204,7 +205,7 @@ footer{padding:28px 0 50px;font-size:13px;color:var(--muted)}
 <div class="controls" role="region" aria-label="Controles"><div class="wrap ctl-top"><button class="btn ctl-toggle" id="ctlToggle" aria-expanded="false" aria-controls="ctlBody"><span id="ctlSummary"></span> <span aria-hidden="true">▾</span></button></div><div class="wrap ctl-body" id="ctlBody">
   <div><span class="ctl-label">Años a comparar <button class="info" data-t="anios" type="button" aria-label="Qué significan los años">i</button></span><span class="seg yearpick" id="yearPick" role="group" aria-label="Elegí dos años para comparar"><button role="checkbox" data-y="2024">2024</button><button role="checkbox" data-y="2025">2025</button><button role="checkbox" data-y="2026">2026*</button><button role="checkbox" data-y="2026p">2026 proy.</button></span></div>
   <div><span class="ctl-label">Qué mirar <button class="info" data-t="medida" type="button" aria-label="Qué significa cada opción">i</button></span><span class="seg" id="segMetric"><button data-v="ini" title="Lo que aprobó la Legislatura en la ley de presupuesto">Aprobado por ley</button><button data-v="vig" title="Lo aprobado más los cambios que hizo el Ejecutivo durante el año">Con cambios</button><button data-v="dev" title="Lo que efectivamente se gastó">Gastado</button></span></div>
-  <div><span class="ctl-label">Cómo medir <button class="info" data-t="unidad" type="button" aria-label="Qué significa cada opción">i</button></span><span class="seg" id="segUnit"><button data-v="real" title="Pesos de 2026: descuenta la inflación">Sin inflación</button><button data-v="nom" title="Pesos de cada año, sin ajustar">Pesos de cada año</button><button data-v="share" title="Peso de cada área en el total">% del total</button></span></div>
+  <div><span class="ctl-label">Cómo medir <button class="info" data-t="unidad" type="button" aria-label="Qué significa cada opción">i</button></span><span class="seg" id="segUnit"><button data-v="real" title="Valores en pesos de 2026: descuenta la inflación">Real <small>(sin inflación)</small></button><button data-v="nom" title="Pesos de cada año, tal como figuran en los documentos">Nominal <small>(pesos de cada año)</small></button><button data-v="share" title="Peso de cada área en el total del presupuesto">% del total</button></span></div>
 </div><div class="wrap ctl-hint"><p class="sub" id="yearHint" style="margin:-4px 0 8px">Marcá dos años. Si marcás un tercero, se desmarca el primero que elegiste. "2026 proy." es una estimación de cómo cerraría 2026.</p></div><div class="ipcbar"><div class="wrap" id="ipcBar"></div></div></div>
 
 <main id="main">
@@ -391,7 +392,7 @@ const real = (v,y) => v * A['2026'] / A[y];
 const pair = () => [...S.years].sort();
 const yl = y => y==='2026p'?'2026 proy.':(y==='2026'?(S.metric==='ini'?'2026':'2026 (a junio)'):y);
 const MK = m => m==='ini'?'l':(m==='vig'?'v':'d');
-const MLAB={ini:'Aprobado por ley',vig:'Con cambios',dev:'Gastado'}; const ULAB={real:'Sin inflación',nom:'Pesos de cada año',share:'% del total'};
+const MLAB={ini:'Aprobado por ley',vig:'Con cambios',dev:'Gastado'}; const ULAB={real:'Real (sin inflación)',nom:'Nominal (pesos de cada año)',share:'% del total'};
 const fmtMoney = v => { const a=Math.abs(v);
   if(a>=1e12) return '$ '+(v/1e12).toLocaleString('es-AR',{maximumFractionDigits:2,minimumFractionDigits:2})+' billones';
   if(a>=1e9) return '$ '+Math.round(v/1e6).toLocaleString('es-AR')+' M';
@@ -429,9 +430,14 @@ D.tot['2026p']={vig:D.tot['2026'].vig, dev:D.progs.reduce((a,p)=>a+(p.d['2026p']
 { const FPt=D.tot['2026p'].dev/D.tot['2026'].dev; for(const k of ['objeto','parcial','funcion']){ const o={}; for(const [c,v] of Object.entries(D[k]['2026'])) o[c]={...v, dev:v.dev*FPt}; D[k]['2026p']=o; } }
 const progs = D.progs.map(p=>({...p, name:nice(p.n)}));
 const J = {};
-for(const p of progs){ const j=J[p.j]||(J[p.j]={c:p.j,name:jname(p.j),v:{},d:{},l:{},pp:{},progs:[]}); j.progs.push(p); j.dA=(j.dA||0)+(p.dA||0);
+for(const p of progs){ const j=J[p.j]||(J[p.j]={c:p.j,name:jname(p.j),v:{},d:{},l:{},pp:{},lpp:{},progs:[]}); j.progs.push(p); j.dA=(j.dA||0)+(p.dA||0);
   for(const y of YA){ j.v[y]=(j.v[y]||0)+(p.v[y]||0); j.d[y]=(j.d[y]||0)+(p.d[y]||0); j.l[y]=(j.l[y]||0)+(p.l[y]||0);
-    const pp_=p.pp[y]||{}; j.pp[y]=j.pp[y]||{}; for(const k in pp_) j.pp[y][k]=(j.pp[y][k]||0)+pp_[k]; } }
+    const pp_=p.pp[y]||{}; j.pp[y]=j.pp[y]||{}; for(const k in pp_) j.pp[y][k]=(j.pp[y][k]||0)+pp_[k];
+    const lp_=(p.lpp||{})[y]||{}; j.lpp[y]=j.lpp[y]||{}; for(const k in lp_) j.lpp[y][k]=(j.lpp[y][k]||0)+lp_[k]; } }
+// obra (partida 12) de un programa o ministerio: ley si se mira "Aprobado por ley" o si no hay detalle vigente (2026)
+const obSrc=(o,y)=>{ const v=((o.pp||{})[y]||{})['12']||0; const hasV=Object.keys((o.pp||{})[y]||{}).length>0; return (S.metric==='ini'||!hasV)?'l':'v'; };
+const obOf=(o,y)=>obSrc(o,y)==='l'?(((o.lpp||{})[y]||{})['12']||0):(((o.pp||{})[y]||{})['12']||0);
+const obHasV=y=>progs.some(p=>Object.keys((p.pp||{})[y]||{}).length>0);
 const jurs = Object.values(J);
 const mv = (o,y) => (o[MK(S.metric)]||{})[y]||0;
 
@@ -867,29 +873,32 @@ function renderObras(){
   svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m_.b})`).call(d3.axisBottom(x0).tickSize(0)).select('.domain').remove();
   yrs.forEach(y=>ser.forEach(([lab,k,c])=>{ const v=val(y,k); svg.append('rect').attr('x',x0(y)+x1(k)).attr('width',x1.bandwidth()).attr('y',ys(v)).attr('height',ys(0)-ys(v)).attr('fill',c).attr('rx',2).on('mousemove',e=>showTip(e,`<b>${y} · ${lab}</b><br>${fmtU(v)}`)).on('mouseleave',hideTip); }));
   // por ministerio
-  const jy=yS_; const rows=jurs.map(j=>({j,v:j.pp[jy]?(j.pp[jy]['12']||0):0})).filter(r=>r.v>0).sort((a,b)=>b.v-a.v);
+  const jy=yS_; const useL=S.metric==='ini'||!obHasV(jy); const rows=jurs.map(j=>({j,v:useL?((j.lpp[jy]||{})['12']||0):((j.pp[jy]||{})['12']||0)})).filter(r=>r.v>0).sort((a,b)=>b.v-a.v);
+  const tot0=d3.sum(rows,r=>r.v); const small=rows.filter(r=>r.v/tot0<0.005); if(small.length>1){ rows.splice(rows.length-small.length); }
   const ej=document.getElementById('chObJ'); ej.innerHTML=''; const w2=W(ej), rh=24, lw=w2<560?130:200; const h2=rows.length*rh+8; const xs=d3.scaleLinear().domain([0,d3.max(rows,r=>r.v)]).range([lw,w2-90]);
-  const s2=d3.select(ej).append('svg').attr('viewBox',`0 0 ${w2} ${h2}`); const totY=d3.sum(rows,r=>r.v);
+  const s2=d3.select(ej).append('svg').attr('viewBox',`0 0 ${w2} ${h2}`); const totY=tot0;
   rows.forEach((r,i)=>{ const y0=4+i*rh; const g=s2.append('g').attr('class','bar-row').attr('tabindex',0).on('click',()=>openFicha(r.j.c)).on('mousemove',e=>showTip(e,`<b>${esc(r.j.name)}</b><br>${jy}: ${fmtMoney(r.v)} (${share(r.v/totY)} de la obra directa)`)).on('mouseleave',hideTip);
     const nm=r.j.name.length>(lw<150?18:28)? r.j.name.slice(0,lw<150?17:27)+'…':r.j.name; g.append('text').attr('class','lab').attr('y',y0+14).text(nm);
     g.append('rect').attr('x',lw).attr('y',y0+3).attr('width',Math.max(1,xs(r.v)-lw)).attr('height',14).attr('fill','var(--c1)').attr('rx',2);
     g.append('text').attr('x',xs(r.v)+5).attr('y',y0+14).style('font-size','11px').text(share(r.v/totY)); });
-  d3.select(ej).append('p').attr('class','sub').text(`Año: ${jy}${jy==='2026'?' (crédito vigente a junio)':' (crédito vigente al cierre)'}. Tocá un ministerio para ver su ficha.`);
+  if(small.length>1) d3.select(ej).append('p').attr('class','sub').text(`Otros ${small.length} organismos suman ${share(d3.sum(small,r=>r.v)/tot0)}.`);
+  if(!rows.length){ ej.innerHTML='<p class="sub">No hay datos de obra por ministerio para ese año.</p>'; }
+  d3.select(ej).append('p').attr('class','sub').text(`Año: ${jy}. ${useL?'Crédito aprobado por ley':'Crédito vigente al cierre'}${(!useL||S.metric==='ini')?'':''}${(S.metric!=='ini'&&useL)?' (para 2026 todavía no hay detalle por ministerio del crédito con cambios, así que se muestra lo aprobado por ley)':''}. Tocá un ministerio para ver su ficha.`);
   renderObTable(); renderObrasList();
 }
 function renderObTable(){
   const [ya,yb]=pair(); const A_=ya==='2026p'?'2026':ya, B_=yb==='2026p'?'2026':yb;
   const q=S.qOb.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-  const ob=(p,y)=>(p.pp[y]||{})['12']||0;
+  const ob=(p,y)=>obOf(p,y);
   let rows=progs.filter(p=>Y.some(y=>ob(p,y)>0)).map(p=>({p,v:Y.map(y=>ob(p,y)),jn:J[p.j].name}));
   if(q) rows=rows.filter(r=>norm(r.p.name+' '+r.p.c+' '+r.jn).includes(q));
   rows.sort((a,b)=>b.v[2]-a.v[2]||b.v[1]-a.v[1]);
-  const shareT=y=>(D.objeto[y]['12']||{}).vig||1;
+  const shareT=y=>d3.sum(progs,p=>obOf(p,y))||1;
   const cell=(v,y)=>v?(S.unit==='share'?share(v/shareT(y)):fmtMoney(S.unit==='real'?real(v,y):v)):'—';
   document.querySelector('#tOb tbody').innerHTML=rows.map(r=>{ const a=ob(r.p,A_), b=ob(r.p,B_); const c=a?(S.unit==='nom'?b/a-1:(S.unit==='share'?b/shareT(B_)-a/shareT(A_):real(b,B_)/real(a,A_)-1)):null;
     const isNew=b&&(!a||a<b*0.01); const tag=isNew?'<span class="pill up">nuevo</span>':((a&&!b)?'<span class="pill down">sin crédito</span>':'');
     return `<tr><td><b>${esc(r.p.c)}</b> · ${esc(r.p.name)} ${tag}<div class="sub">${esc(r.jn)}</div></td>${r.v.map((v,i)=>`<td>${cell(v,Y[i])}</td>`).join('')}<td class="chg ${c>0?'up':(c<0?'down':'')}">${isNew?'nuevo':(c==null?'—':(S.unit==='share'?pp(c):pct(c)))}</td></tr>`; }).join('')||'<tr><td colspan="5">No hay programas que coincidan con la búsqueda.</td></tr>';
-  document.getElementById('obNote').textContent=`${rows.length} programas. Crédito vigente en la partida Trabajos públicos (2026: a junio). Variación: ${yl(B_)} frente a ${yl(A_)}${S.unit==='share'?', en puntos de participación sobre el total de obra directa':''}.`;
+  document.getElementById('obNote').textContent=`${rows.length} programas. Partida Trabajos públicos: ${S.metric==='ini'?'crédito aprobado por ley':'crédito vigente al cierre (2026: aprobado por ley, porque todavía no hay detalle por programa)'}. Variación: ${yl(B_)} frente a ${yl(A_)}${S.unit==='share'?', en puntos de participación sobre el total de obra directa':''}.`;
 }
 document.getElementById('qOb').addEventListener('input',e=>{ S.qOb=e.target.value; renderObTable(); });
 
@@ -983,7 +992,7 @@ const GL={
  _como:['¿Cómo se usa este tablero?','Arriba elegís una sección (Gastos, Ingresos, Obras…). En la barra de controles elegís qué años comparar, qué mirar (lo aprobado por ley, lo que quedó con los cambios del año o lo que efectivamente se gastó) y cómo medir (sin inflación es lo recomendado). Pasá el mouse o tocá cualquier barra para ver el número exacto. Las palabras con (i) tienen una explicación.'],
  anios:['Años a comparar','Se comparan siempre dos años. 2024 y 2025 son años cerrados. "2026" es el presupuesto 2026 (con "Aprobado por ley" es la ley completa; con los cambios, el dato llega al 30 de junio). "2026 proy." estima cómo terminaría 2026 si se repite el ritmo de gasto de 2025.'],
  medida:['Qué mirar','"Aprobado por ley": lo que votó la Legislatura. "Con cambios": lo aprobado más las ampliaciones y reasignaciones que hizo el Ejecutivo durante el año (en la jerga, crédito vigente). "Gastado": lo que efectivamente se comprometió y se debe pagar (gasto devengado).'],
- unidad:['Cómo medir','"Sin inflación" lleva todos los montos a pesos de 2026, para que se puedan comparar años con distinta inflación: es la opción recomendada. "Pesos de cada año" muestra los montos tal como figuran en los documentos. "% del total" muestra cuánto pesa cada área dentro del presupuesto de ese año.'],
+ unidad:['Cómo medir','"Real (sin inflación)" lleva todos los montos a pesos de 2026 descontando la inflación del INDEC, para que se puedan comparar años distintos: es la opción recomendada. "Nominal (pesos de cada año)" muestra los montos tal como figuran en los documentos. "% del total" muestra cuánto pesa cada área dentro del presupuesto de ese año.'],
  ley:['Presupuesto aprobado por ley','Es lo que la Legislatura autoriza a gastar al aprobar la ley de presupuesto, detallado por programa.'],
  vigente:['Crédito vigente','El presupuesto aprobado más todas las modificaciones que hace el Ejecutivo durante el año (ampliaciones, reasignaciones entre partidas). Es el límite de gasto que rige en cada momento.'],
  devengado:['Gasto devengado','El gasto que el Estado ya comprometió y reconoce que debe pagar (por ejemplo, una obra certificada o un sueldo liquidado). Es la medida estándar de "lo que se gastó".'],
