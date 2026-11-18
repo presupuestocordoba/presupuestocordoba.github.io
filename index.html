@@ -143,6 +143,14 @@ main section{border-bottom:0;min-height:60vh}
 nav.sec a[aria-current="page"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .yearpick button[aria-checked="true"]{background:var(--accent);color:#fff}
 .yearpick button[aria-checked="true"]::before{content:"✓ "}
+.y26menu{position:fixed;z-index:60;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.14);padding:8px;width:min(340px,calc(100vw - 24px))}
+.y26menu .y26t{margin:2px 6px 6px;font-size:12px;color:var(--muted)}
+.y26menu button{display:block;width:100%;text-align:left;font:inherit;background:transparent;border:1px solid transparent;border-radius:8px;padding:9px 10px;cursor:pointer;color:var(--ink)}
+.y26menu button:hover,.y26menu button:focus-visible{background:var(--accent-soft)}
+.y26menu button[aria-checked="true"]{border-color:var(--accent)}
+.y26menu button[aria-checked="true"] b::before{content:"✓ ";color:var(--accent)}
+.y26menu b{display:block;font-size:14px}.y26menu span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.unit-tag{font-size:10.5px;font-weight:400;color:var(--muted);margin-left:3px}
 .pager{display:flex;justify-content:space-between;gap:12px;margin-top:28px;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap}
 .pager a{text-decoration:none;font-size:14px;border:1px solid var(--line);padding:8px 14px;border-radius:8px;background:var(--surface)}
 .pager a:hover{border-color:var(--accent)}
@@ -203,10 +211,10 @@ footer{padding:28px 0 50px;font-size:13px;color:var(--muted)}
 </div></header>
 
 <div class="controls" role="region" aria-label="Controles"><div class="wrap ctl-top"><button class="btn ctl-toggle" id="ctlToggle" aria-expanded="false" aria-controls="ctlBody"><span id="ctlSummary"></span> <span aria-hidden="true">▾</span></button></div><div class="wrap ctl-body" id="ctlBody">
-  <div><span class="ctl-label">Años a comparar <button class="info" data-t="anios" type="button" aria-label="Qué significan los años">i</button></span><span class="seg yearpick" id="yearPick" role="group" aria-label="Elegí dos años para comparar"><button role="checkbox" data-y="2024">2024</button><button role="checkbox" data-y="2025">2025</button><button role="checkbox" data-y="2026">2026*</button><button role="checkbox" data-y="2026p">2026 proy.</button><button role="checkbox" data-y="2027">2027 proyecto</button></span></div>
+  <div><span class="ctl-label">Años a comparar <button class="info" data-t="anios" type="button" aria-label="Qué significan los años">i</button></span><span class="seg yearpick" id="yearPick" role="group" aria-label="Elegí dos años para comparar"><button role="checkbox" data-y="2024">2024</button><button role="checkbox" data-y="2025">2025</button><button role="checkbox" id="y26" aria-haspopup="menu" aria-expanded="false" aria-controls="y26menu">2026 ▾</button><button role="checkbox" data-y="2027">2027 proyecto</button></span></div>
   <div><span class="ctl-label">Qué mirar <button class="info" data-t="medida" type="button" aria-label="Qué significa cada opción">i</button></span><span class="seg" id="segMetric"><button data-v="ini" title="Lo que aprobó la Legislatura en la ley de presupuesto">Aprobado por ley</button><button data-v="vig" title="Lo aprobado más los cambios que hizo el Ejecutivo durante el año">Con cambios</button><button data-v="dev" title="Lo que efectivamente se gastó">Gastado</button></span></div>
   <div><span class="ctl-label">Cómo medir <button class="info" data-t="unidad" type="button" aria-label="Qué significa cada opción">i</button></span><span class="seg" id="segUnit"><button data-v="real" title="Valores en pesos de 2026: descuenta la inflación">Real <small>(sin inflación)</small></button><button data-v="nom" title="Pesos de cada año, tal como figuran en los documentos">Nominal <small>(pesos de cada año)</small></button><button data-v="share" title="Peso de cada área en el total del presupuesto">% del total</button></span></div>
-</div><div class="wrap ctl-hint"><p class="sub" id="yearHint" style="margin:-4px 0 8px">Marcá dos años. Si marcás un tercero, se desmarca el primero que elegiste. "2026 proy." es una estimación de cómo cerraría 2026. "2027 proyecto" es lo que el Ejecutivo pide a la Legislatura.</p></div><div class="ipcbar"><div class="wrap" id="ipcBar"></div></div></div>
+</div><div class="wrap ctl-hint"><p class="sub" id="yearHint" style="margin:-4px 0 8px">Marcá dos años. Si marcás un tercero, se desmarca el primero que elegiste. En "2026" elegís entre el presupuesto 2026 y la proyección de cómo cerraría el año. "2027 proyecto" es lo que el Ejecutivo pide a la Legislatura.</p></div><div class="ipcbar"><div class="wrap" id="ipcBar"></div></div></div>
 
 <main id="main">
 <section id="resumen"><div class="wrap">
@@ -229,15 +237,15 @@ footer{padding:28px 0 50px;font-size:13px;color:var(--muted)}
   <div class="grid2" style="margin-top:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr))">
     <div class="card"><h3>Quién gana y quién pierde</h3><p class="howread">Presupuesto 2027 pedido contra presupuesto 2026 aprobado, ministerio por ministerio, sin inflación. Estructura de ministerios del proyecto 2027 para los dos años.</p><div id="p27Win"></div></div>
     <div class="card"><h3>Fondos sin destino y recortes a cuenta</h3><p class="howread">Dos números que el proyecto deja abiertos y que el Ejecutivo administra durante el año.</p><div id="p27Free"></div></div>
-    <div class="card span-all"><h3>En qué se gasta: por tipo de gasto</h3><p class="sub">Administración General, millones de pesos. "Cierre 2026" es la proyección oficial del Ministerio de Economía publicada en el Mensaje. Variación real con la inflación promedio 2027 de 21,1%.</p><div class="tablebox" style="max-height:none"><table id="tP27Eco"><thead><tr><th>Concepto</th><th>Cierre 2026</th><th>Proyecto 2027</th><th>Var. nominal</th><th>Var. real</th></tr></thead><tbody></tbody></table></div></div>
-    <div class="card"><h3>Por finalidad</h3><p class="sub">Millones de pesos. Fuente: Mensaje de Elevación, Tabla 16.</p><div class="tablebox" style="max-height:none"><table id="tP27Fin"><thead><tr><th>Finalidad</th><th>Cierre 2026</th><th>Proyecto 2027</th><th>Var. real</th></tr></thead><tbody></tbody></table></div></div>
-    <div class="card"><h3>De dónde sale la plata</h3><p class="sub">Ingresos de la Administración General, millones de pesos. Fuente: Mensaje, Tablas 3 y 6.</p><div class="tablebox" style="max-height:none"><table id="tP27Ing"><thead><tr><th>Concepto</th><th>Cierre 2026</th><th>Proyecto 2027</th><th>Var. real</th></tr></thead><tbody></tbody></table></div></div>
-    <div class="card"><h3>Impuestos provinciales</h3><p class="sub">Lo que la Provincia espera recaudar con sus propios impuestos. Millones de pesos (Tabla 4).</p><div class="tablebox" style="max-height:none"><table id="tP27Trib"><thead><tr><th>Impuesto</th><th>Cierre 2026</th><th>Proyecto 2027</th><th>Var. real</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="card span-all"><h3>En qué se gasta: por tipo de gasto</h3><p class="sub">Administración General, millones de pesos. "Cierre 2026" es la proyección oficial del Ministerio de Economía publicada en el Mensaje. Variación real con la inflación promedio 2027 de 21,1%.</p><div class="tablebox" style="max-height:none"><table id="tP27Eco"><thead><tr><th>Concepto</th><th>Cierre 2026</th><th>Proyecto 2027</th><th>Var. nominal<div class="sub">sin descontar inflación</div></th><th>Var. real<div class="sub">sin inflación</div></th></tr></thead><tbody></tbody></table></div></div>
+    <div class="card"><h3>Por finalidad</h3><p class="sub">Millones de pesos. Fuente: Mensaje de Elevación, Tabla 16.</p><div class="tablebox" style="max-height:none"><table id="tP27Fin"><thead><tr><th>Finalidad</th><th>Cierre 2026</th><th>Proyecto 2027</th><th>Var. real<div class="sub">sin inflación</div></th></tr></thead><tbody></tbody></table></div></div>
+    <div class="card"><h3>De dónde sale la plata</h3><p class="sub">Ingresos de la Administración General, millones de pesos. Fuente: Mensaje, Tablas 3 y 6.</p><div class="tablebox" style="max-height:none"><table id="tP27Ing"><thead><tr><th>Concepto</th><th>Cierre 2026</th><th>Proyecto 2027</th><th>Var. real<div class="sub">sin inflación</div></th></tr></thead><tbody></tbody></table></div></div>
+    <div class="card"><h3>Impuestos provinciales</h3><p class="sub">Lo que la Provincia espera recaudar con sus propios impuestos. Millones de pesos (Tabla 4).</p><div class="tablebox" style="max-height:none"><table id="tP27Trib"><thead><tr><th>Impuesto</th><th>Cierre 2026</th><th>Proyecto 2027</th><th>Var. real<div class="sub">sin inflación</div></th></tr></thead><tbody></tbody></table></div></div>
     <div class="card"><h3>Resultados fiscales</h3><p class="sub">Administración General, millones de pesos (Tabla 11). Un resultado positivo es superávit.</p><div class="tablebox" style="max-height:none"><table id="tP27Res"><thead><tr><th>Resultado</th><th>Cierre 2026</th><th>Proyecto 2027</th></tr></thead><tbody></tbody></table></div></div>
     <div class="card span-all"><h3>Deuda: lo que autoriza el proyecto</h3><p class="howread">El artículo 1 no muestra la deuda: las autorizaciones para endeudarse están en otros artículos de la ley. Comparación con la ley 2026.</p><div class="tiles" id="p27DebtTiles"></div><div class="tablebox" style="max-height:none;margin-top:12px"><table id="tP27Aut"><thead><tr><th>Autorización</th><th>Ley 2026</th><th>Proyecto 2027</th></tr></thead><tbody></tbody></table></div></div>
     <div class="card"><h3>Plan de obras 2027</h3><p class="sub" id="p27ObSub"></p><div id="p27Ob"></div></div>
     <div class="card"><h3>Jubilaciones: el déficit de la Caja</h3><div id="p27Prev"></div></div>
-    <div class="card span-all"><h3>Presupuesto de cada ente: ley 2026 vs. proyecto 2027</h3><p class="sub">Erogaciones que fija la ley para cada ente, empresa o agencia. Variación real con la inflación 2027 supuesta.</p><div class="tablebox" style="max-height:none"><table id="tP27Ent"><thead><tr><th>Ente</th><th>Ley 2026</th><th>Proyecto 2027</th><th>Var. real</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="card span-all"><h3>Presupuesto de cada ente: ley 2026 vs. proyecto 2027</h3><p class="sub">Erogaciones que fija la ley para cada ente, empresa o agencia. Variación real con la inflación 2027 supuesta.</p><div class="tablebox" style="max-height:none"><table id="tP27Ent"><thead><tr><th>Ente</th><th>Ley 2026</th><th>Proyecto 2027</th><th>Var. real<div class="sub">sin inflación</div></th></tr></thead><tbody></tbody></table></div></div>
     <div class="card"><h3>Impuestos que se dejan de cobrar</h3><div id="p27Gt"></div></div>
     <div class="card"><h3>Qué cambia en el Código Tributario</h3><p class="sub">Resumen propio del proyecto de modificaciones al Código Tributario 2027.</p><ul class="method" id="p27Ctp"></ul></div>
   </div>
@@ -397,6 +405,11 @@ footer{padding:28px 0 50px;font-size:13px;color:var(--muted)}
   <p><b>Elaborado por Giuliano Doffo</b>, licenciado en Ciencia Política (UCC), sobre documentos oficiales del Gobierno de la Provincia de Córdoba (Ministerio de Economía y Gestión Pública, Portal de Transparencia) y el INDEC.</p>
   <p>Datos actualizados al 18 de noviembre de 2026, con el Proyecto de Presupuesto 2027 y sus anexos. Ver <a href="#metodo">metodología y fuentes</a>.</p>
 </div></footer>
+<div class="y26menu" id="y26menu" role="menu" aria-label="Qué 2026 querés ver" hidden>
+  <p class="y26t">¿Qué 2026 querés comparar?</p>
+  <button role="menuitemradio" data-y26="2026"><b>Presupuesto 2026</b><span>Lo que aprobó la Legislatura. Con "Con cambios" o "Gastado", el dato llega al 30 de junio.</span></button>
+  <button role="menuitemradio" data-y26="2026p"><b>Proyección del cierre 2026</b><span>Cómo terminaría el año si cada ministerio sigue el ritmo de gasto del primer semestre (estimación de este tablero).</span></button>
+</div>
 <div class="tip" id="tip" role="tooltip"></div>
 <div class="pop" id="pop" role="dialog" aria-modal="false" hidden></div>
 
@@ -470,14 +483,24 @@ function syncSegs(){
   const has27=S.years.includes('2027'); const lockDev = S.years.includes('2026')||has27; const lockVig = S.years.includes('2026p')||has27; if(has27) S.metric='ini'; else if(lockVig) S.metric='dev'; if(lockDev&&S.metric==='dev') S.metric='ini';
   const vi=document.querySelector('#segMetric button[data-v="ini"]'); vi.disabled=lockVig&&!has27; vi.title=has27?'El proyecto 2027 solo tiene lo que pide aprobar: se compara lo aprobado por ley. Si elegiste 2026 proy., ese año usa el gasto proyectado.':lockVig?'La proyección 2026 estima el gasto ejecutado: se compara en Ejecutado':'Presupuesto inicial aprobado por ley, por programa';
   const vv=document.querySelector('#segMetric button[data-v="vig"]'); vv.disabled=lockVig; vv.title=has27?'2027 todavía no tiene cambios: es un proyecto de ley':lockVig?'La proyección 2026 estima el gasto ejecutado: se compara en Ejecutado':'';
-  document.querySelectorAll('#yearPick button').forEach(b=>b.setAttribute('aria-checked',String(S.years.includes(b.dataset.y))));
+  document.querySelectorAll('#yearPick button[data-y]').forEach(b=>b.setAttribute('aria-checked',String(S.years.includes(b.dataset.y))));
+  { const b=document.getElementById('y26'); const s26=S.years.includes('2026'), s26p=S.years.includes('2026p'); b.setAttribute('aria-checked',String(s26||s26p)); b.textContent=s26p?'2026 · proyección ▾':(s26?'2026 · presupuesto ▾':'2026 ▾');
+    document.querySelectorAll('#y26menu button').forEach(x=>x.setAttribute('aria-checked',String(S.years.includes(x.dataset.y26)))); }
   
   for(const [id,key] of [['segMetric','metric'],['segUnit','unit'],['segEjY','ejY'],['segDebtH','debtH']])
     document.querySelectorAll('#'+id+' button').forEach(b=>{ b.setAttribute('aria-pressed', String(S[key]===b.dataset.v)); });
   const dv=document.querySelector('#segMetric button[data-v="dev"]'); dv.disabled=lockDev; dv.title=has27?'2027 todavía no tiene gasto: es un proyecto de ley':lockDev?'2026 solo tiene ejecución del primer semestre: no es comparable con un año completo':''; if(lockDev) dv.setAttribute('aria-label','Ejecutado (no disponible: 2026 tiene solo el primer semestre)');
 }
 function save(){ try{ localStorage.setItem('pcba-state3', JSON.stringify({years:S.years,metric:S.metric,unit:S.unit,ejY:S.ejY})); }catch(e){} }
-document.querySelectorAll('#yearPick button').forEach(b=>b.onclick=()=>{ const y=b.dataset.y; if(S.years.includes(y)) return; const other={'2026':'2026p','2026p':'2026'}[y]; if(other&&S.years.includes(other)) S.years=S.years.map(x=>x===other?y:x); else S.years=[S.years[1],y]; save(); render(); });
+function pickYear(y){ if(S.years.includes(y)) return; const other={'2026':'2026p','2026p':'2026'}[y]; if(other&&S.years.includes(other)) S.years=S.years.map(x=>x===other?y:x); else S.years=[S.years[1],y]; save(); render(); }
+document.querySelectorAll('#yearPick button[data-y]').forEach(b=>b.onclick=()=>pickYear(b.dataset.y));
+const y26m=document.getElementById('y26menu'), y26b=document.getElementById('y26');
+function closeY26(){ y26m.hidden=true; y26b.setAttribute('aria-expanded','false'); }
+y26b.onclick=e=>{ e.stopPropagation(); if(!y26m.hidden){ closeY26(); return; } y26m.hidden=false; y26b.setAttribute('aria-expanded','true'); const r=y26b.getBoundingClientRect(); const w=y26m.offsetWidth; y26m.style.left=Math.max(12,Math.min(r.left,innerWidth-w-12))+'px'; y26m.style.top=(r.bottom+6)+'px'; (y26m.querySelector('[aria-checked="true"]')||y26m.querySelector('button')).focus(); };
+y26m.querySelectorAll('button').forEach(b=>b.onclick=e=>{ e.stopPropagation(); closeY26(); pickYear(b.dataset.y26); y26b.focus(); });
+document.addEventListener('click',e=>{ if(!e.target.closest('#y26menu')) closeY26(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeY26(); });
+addEventListener('scroll',closeY26,{passive:true});
 bindSeg('segMetric','metric'); bindSeg('segUnit','unit'); bindSeg('segEjY','ejY'); bindSeg('segDebtH','debtH');
 
 // ---------- tiles
@@ -1027,7 +1050,7 @@ function renderEntesP(){
 // ================= GLOSARIO + AYUDA =================
 const GL={
  _como:['¿Cómo se usa este tablero?','Arriba elegís una sección (Gastos, Ingresos, Obras…). En la barra de controles elegís qué años comparar, qué mirar (lo aprobado por ley, lo que quedó con los cambios del año o lo que efectivamente se gastó) y cómo medir (sin inflación es lo recomendado). Pasá el mouse o tocá cualquier barra para ver el número exacto. Las palabras con (i) tienen una explicación.'],
- anios:['Años a comparar','Se comparan siempre dos años. 2024 y 2025 son años cerrados. "2027 proyecto" es el proyecto de ley enviado a la Legislatura: solo se puede comparar lo aprobado por ley (o contra "2026 proy.", el gasto que probablemente cierre 2026). "2026" es el presupuesto 2026 (con "Aprobado por ley" es la ley completa; con los cambios, el dato llega al 30 de junio). "2026 proy." estima cómo terminaría 2026 si se repite el ritmo de gasto de 2025.'],
+ anios:['Años a comparar','Se comparan siempre dos años. 2024 y 2025 son años cerrados. Al tocar "2026" elegís qué 2026 mirar: el presupuesto 2026 o la proyección del cierre del año según el ritmo de gasto del primer semestre. "2027 proyecto" es el proyecto de ley enviado a la Legislatura: solo se puede comparar lo aprobado por ley (o contra "2026 proy.", el gasto que probablemente cierre 2026). "2026" es el presupuesto 2026 (con "Aprobado por ley" es la ley completa; con los cambios, el dato llega al 30 de junio). "2026 proy." estima cómo terminaría 2026 si se repite el ritmo de gasto de 2025.'],
  medida:['Qué mirar','"Aprobado por ley": lo que votó la Legislatura. "Con cambios": lo aprobado más las ampliaciones y reasignaciones que hizo el Ejecutivo durante el año (en la jerga, crédito vigente). "Gastado": lo que efectivamente se comprometió y se debe pagar (gasto devengado).'],
  unidad:['Cómo medir','"Real (sin inflación)" lleva todos los montos a pesos de 2026 descontando la inflación del INDEC, para que se puedan comparar años distintos: es la opción recomendada. "Nominal (pesos de cada año)" muestra los montos tal como figuran en los documentos. "% del total" muestra cuánto pesa cada área dentro del presupuesto de ese año.'],
  ley:['Presupuesto aprobado por ley','Es lo que la Legislatura autoriza a gastar al aprobar la ley de presupuesto, detallado por programa.'],
@@ -1065,21 +1088,21 @@ function renderP27(){ const P=D.p27; const d27=A['2027']/A['2026'];
   const prev=y=>d3.sum(progs,p=>{ const o=(p.lpp||{})[y]||{}; return (o['04']||0)+(o['14']||0); });
   const eg26=D.tot['2026'].ini-D.ley['2026'], eg27=P.econ_gestion*1e6;
   const tl=[['Gasto total pedido',fmtMoney(L27),'Artículo 1 del proyecto. Unos $ '+Math.round(L27/POP/1000).toLocaleString('es-AR')+' mil por habitante.'],
-   ['Frente a la ley 2026',pct(real(L27,'2027')/L26-1,1),'sin inflación. Nominal: '+pct(L27/L26-1,1)+'.'],
-   ['Frente al cierre 2026 oficial',pct(L27/C26/d27-1,1),'sin inflación, contra el gasto que el Ministerio estima para todo 2026 ('+fmtMoney(C26)+').'],
-   ['Frente a nuestra proyección 2026',pct(real(L27,'2027')/pr-1,1),'sin inflación, contra el cierre 2026 del escenario principal de este tablero ('+fmtMoney(pr)+').'],
+   ['Frente a la ley 2026 (real)',pct(real(L27,'2027')/L26-1,1),'en términos reales, sin inflación. En pesos nominales: '+pct(L27/L26-1,1)+'.'],
+   ['Frente al cierre 2026 oficial (real)',pct(L27/C26/d27-1,1),'en términos reales (nominal: '+pct(L27/C26-1,1)+'), contra el gasto que el Ministerio estima para todo 2026 ('+fmtMoney(C26)+').'],
+   ['Frente a nuestra proyección 2026 (real)',pct(real(L27,'2027')/pr-1,1),'en términos reales (nominal: '+pct(L27/pr-1,1)+'), contra el cierre 2026 del escenario principal de este tablero ('+fmtMoney(pr)+').'],
    ['Resultado financiero',fmtMoney(P.result.p27[2]*1e6),'superávit previsto de la Administración General (cierre 2026: '+fmtMoney(P.result.c26[2]*1e6)+').'],
    ['Planta de personal',P.cargos.ac.toLocaleString('es-AR')+' cargos',(P.cargos.ac-D.cargos['2026']>=0?'+':'')+(P.cargos.ac-D.cargos['2026']).toLocaleString('es-AR')+' frente a la ley 2026, más '+P.cargos.horas.toLocaleString('es-AR')+' horas cátedra.']];
   document.getElementById('p27Tiles').innerHTML=tl.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
   // ganadores / perdedores
   const rows=jurs.filter(j=>(j.l['2026']||0)>15e9&&(j.l['2027']||0)>0).map(j=>({j,c:real(j.l['2027'],'2027')/j.l['2026']-1,d:real(j.l['2027'],'2027')-j.l['2026']})).sort((a,b)=>b.c-a.c);
   const drv=(j,up)=>{ const ps=j.progs.map(p=>({p,d:real((p.l||{})['2027']||0,'2027')-((p.l||{})['2026']||0)})).sort((a,b)=>up?b.d-a.d:a.d-b.d)[0]; return ps&&Math.abs(ps.d)>1e9?`<div class="sub">Explica la mayor parte: ${esc(ps.p.name)} (${ps.d>0?'+':''}${fmtMoney(ps.d)} en pesos de 2026)</div>`:''; };
-  const li=(r,up)=>`<li><b>${esc(r.j.name)}</b>: <span class="chg ${r.c>0?'up':'down'}">${pct(r.c,1)}</span> <span class="sub">(${fmtMoney(r.j.l['2027'])} en 2027)</span>${drv(r.j,up)}</li>`;
+  const li=(r,up)=>`<li><b>${esc(r.j.name)}</b>: <span class="chg ${r.c>0?'up':'down'}">${pct(r.c,1)}<span class="unit-tag">real</span></span> <span class="sub">(${fmtMoney(r.j.l['2027'])} en 2027)</span>${drv(r.j,up)}</li>`;
   const neg=rows.filter(r=>r.c<0).reverse();
   document.getElementById('p27Win').innerHTML=`<p class="sub" style="margin:4px 0">Los que más crecen</p><ul class="method">${rows.slice(0,5).map(r=>li(r,true)).join('')}</ul><p class="sub" style="margin:8px 0 4px">${neg.length?'Los que caen':'Ninguno cae: los que menos crecen'}</p><ul class="method">${(neg.length?neg:rows.slice(-3).reverse()).map(r=>li(r,false)).join('')}</ul><p class="sub">${rows.filter(r=>r.c>=0).length} de ${rows.length} áreas crecen sin inflación. Solo ministerios y poderes con más de $15.000 M en 2026.</p>`;
-  document.getElementById('p27Free').innerHTML=`<div class="tiles" style="grid-template-columns:1fr"><div class="tile"><div class="k">Previsiones presupuestarias sin destino</div><div class="v">${fmtMoney(prev('2027'))}</div><div class="s">Partidas de "previsión" corriente y de capital que no están asignadas a ningún gasto concreto. En la ley 2026 eran ${fmtMoney(prev('2026'))} (${pct(real(prev('2027'),'2027')/(prev('2026')||1)-1,0)} real). El Ejecutivo decide durante el año a dónde van.</div></div><div class="tile"><div class="k">Economías de gestión</div><div class="v">${fmtMoney(eg27)}</div><div class="s">Recorte que el artículo 5 descuenta del total pero que no se asigna a ningún programa: los programas suman ${fmtMoney(D.tot['2027'].ini)} y la ley fija ${fmtMoney(L27)}. En 2026 la diferencia fue ${fmtMoney(eg26)}. No dice de dónde saldrá el ahorro.</div></div></div>`;
-  const vr=(a,b)=>a>0&&b!=null?b/a/d27-1:null; const M=v=>v==null?'—':Math.round(v).toLocaleString('es-AR'); const C=c=>`<td class="chg ${c>0?'up':(c<0?'down':'')}">${c==null?'—':pct(c,1)}</td>`;
-  const tab=(id,o,nomcol)=>{ document.querySelector('#'+id+' tbody').innerHTML=o.rows.map((n,i)=>{ const a=o.c26[i], b=o.p27[i]; const last=i===o.rows.length-1&&/Total|Gasto total/.test(n); return `<tr${last?' style="font-weight:600"':''}><td>${n}</td><td>${a?M(a):'—'}</td><td>${M(b)}</td>${nomcol?`<td>${a>0?pct(b/a-1,1):'—'}</td>`:''}${C(vr(a,b))}</tr>`; }).join(''); };
+  document.getElementById('p27Free').innerHTML=`<div class="tiles" style="grid-template-columns:1fr"><div class="tile"><div class="k">Previsiones presupuestarias sin destino</div><div class="v">${fmtMoney(prev('2027'))}</div><div class="s">Partidas de "previsión" corriente y de capital que no están asignadas a ningún gasto concreto. En la ley 2026 eran ${fmtMoney(prev('2026'))} (${pct(real(prev('2027'),'2027')/(prev('2026')||1)-1,0)} en términos reales, ${pct(prev('2027')/(prev('2026')||1)-1,0)} nominal). El Ejecutivo decide durante el año a dónde van.</div></div><div class="tile"><div class="k">Economías de gestión</div><div class="v">${fmtMoney(eg27)}</div><div class="s">Recorte que el artículo 5 descuenta del total pero que no se asigna a ningún programa: los programas suman ${fmtMoney(D.tot['2027'].ini)} y la ley fija ${fmtMoney(L27)}. En 2026 la diferencia fue ${fmtMoney(eg26)}. No dice de dónde saldrá el ahorro.</div></div></div>`;
+  const vr=(a,b)=>a>0&&b!=null?b/a/d27-1:null; const M=v=>v==null?'—':Math.round(v).toLocaleString('es-AR'); const C=c=>`<td class="chg ${c>0?'up':(c<0?'down':'')}">${c==null?'—':pct(c,1)+'<span class="unit-tag">real</span>'}</td>`;
+  const tab=(id,o,nomcol)=>{ document.querySelector('#'+id+' tbody').innerHTML=o.rows.map((n,i)=>{ const a=o.c26[i], b=o.p27[i]; const last=i===o.rows.length-1&&/Total|Gasto total/.test(n); return `<tr${last?' style="font-weight:600"':''}><td>${n}</td><td>${a?M(a):'—'}</td><td>${M(b)}</td>${nomcol?`<td>${a>0?pct(b/a-1,1)+'<span class="unit-tag">nominal</span>':'—'}</td>`:''}${C(vr(a,b))}</tr>`; }).join(''); };
   tab('tP27Eco',P.gastos,true); tab('tP27Fin',P.finalidad); tab('tP27Ing',P.ingresos); tab('tP27Trib',P.tribprov);
   document.querySelector('#tP27Res tbody').innerHTML=P.result.rows.map((n,i)=>`<tr><td>${n}</td><td>${M(P.result.c26[i])}</td><td>${M(P.result.p27[i])}</td></tr>`).join('');
   const F=P.finan;
@@ -1108,7 +1131,7 @@ function renderP27(){ const P=D.p27; const d27=A['2027']/A['2026'];
 }
 function renderP27Proj(){ const el=document.getElementById('chP27Proj'); if(!el) return; el.innerHTML='';
   const C26=D.p27.gastos.c26[D.p27.gastos.c26.length-1]*1e6; const pr=D.tot['2026p'].dev;
-  document.getElementById('p27ProjSub').textContent=`Total: el proyecto 2027 (${fmtMoney(D.ley['2027'])}) es ${pct(real(D.ley['2027'],'2027')/pr-1,1)} real frente a nuestro cierre 2026 (${fmtMoney(pr)}) y ${pct(D.ley['2027']/C26/(A['2027']/A['2026'])-1,1)} frente al cierre que estima el Ministerio (${fmtMoney(C26)}). Nuestra proyección queda ${pct(pr/C26-1,1)} por encima de la oficial.`;
+  document.getElementById('p27ProjSub').textContent=`Total: el proyecto 2027 (${fmtMoney(D.ley['2027'])}) es ${pct(real(D.ley['2027'],'2027')/pr-1,1)} real frente a nuestro cierre 2026 (${fmtMoney(pr)}) y ${pct(D.ley['2027']/C26/(A['2027']/A['2026'])-1,1)} real frente al cierre que estima el Ministerio (${fmtMoney(C26)}). Nuestra proyección queda ${pct(pr/C26-1,1)} por encima de la oficial.`;
   const rows=jurs.filter(j=>(j.d['2026p']||0)>15e9&&(j.l['2027']||0)>0).map(j=>({j,c:real(j.l['2027'],'2027')/j.d['2026p']-1})).sort((a,b)=>b.c-a.c);
   const w=W(el), rh=24, narrow=w<560, lw=narrow?130:230, m_={l:lw,r:narrow?56:90,t:22}; const h=rows.length*rh+m_.t+6;
   const ext=Math.min(1.5,d3.max(rows,r=>Math.abs(r.c))); const xS=d3.scaleLinear().domain([-ext,ext]).range([m_.l,w-m_.r]).nice();
@@ -1119,7 +1142,7 @@ function renderP27Proj(){ const el=document.getElementById('chP27Proj'); if(!el)
     .on('mousemove',e=>showTip(e,`<b>${esc(r.j.name)}</b><br>2026 proyectado: ${fmtMoney(r.j.d['2026p'])}<br>2027 proyecto: ${fmtMoney(r.j.l['2027'])}<br>Cambio real: <b>${pct(r.c,1)}</b>`)).on('mouseleave',hideTip);
     const nm=r.j.name.length>(narrow?18:34)? r.j.name.slice(0,narrow?17:33)+'…':r.j.name; g.append('text').attr('class','lab').attr('y',y0+15).text(nm);
     g.append('rect').attr('x',Math.min(xS(0),xS(c))).attr('y',y0+4).attr('width',Math.max(1,Math.abs(xS(c)-xS(0)))).attr('height',14).attr('rx',2).attr('fill',r.c>=0?'var(--up)':'var(--down)');
-    g.append('text').attr('x',r.c>=0?xS(c)+5:xS(0)+5).attr('y',y0+15).style('font-size','11.5px').style('fill',r.c>=0?'var(--up)':'var(--down)').text(pct(r.c,0)); });
+    g.append('text').attr('x',r.c>=0?xS(c)+5:xS(0)+5).attr('y',y0+15).style('font-size','11.5px').style('fill',r.c>=0?'var(--up)':'var(--down)').text(pct(r.c,0)+' real'); });
 }
 
 // ================= INICIO =================
@@ -1135,7 +1158,7 @@ function renderHome(){
   const r27=jurs.filter(j=>(j.l['2026']||0)>20e9&&j.l['2027']).map(j=>({j,c:real(j.l['2027'],'2027')/j.l['2026']-1})).sort((a,b)=>b.c-a.c);
   const prev27=d3.sum(progs,p=>{ const o=(p.lpp||{})['2027']||{}; return (o['04']||0)+(o['14']||0); });
   const items=[
-    `<b>Proyecto 2027:</b> entre las áreas grandes, la que más crece es <b>${esc(r27[0].j.name)}</b> (${pct(r27[0].c,0)}) y la que más cae es <b>${esc(r27[r27.length-1].j.name)}</b> (${pct(r27[r27.length-1].c,0)}). El proyecto prevé tomar <b>${fmtMoney(D.p27.finan.uso_credito*1e6)}</b> de deuda nueva y deja <b>${fmtMoney(prev27)}</b> en previsiones sin destino. <a href="#p2027">Ver el proyecto →</a>`,
+    `<b>Proyecto 2027:</b> entre las áreas grandes, la que más crece es <b>${esc(r27[0].j.name)}</b> (${pct(r27[0].c,0)} real) y la que más cae es <b>${esc(r27[r27.length-1].j.name)}</b> (${pct(r27[r27.length-1].c,0)} real). El proyecto prevé tomar <b>${fmtMoney(D.p27.finan.uso_credito*1e6)}</b> de deuda nueva y deja <b>${fmtMoney(prev27)}</b> en previsiones sin destino. <a href="#p2027">Ver el proyecto →</a>`,
     `Descontada la inflación, el presupuesto aprobado para 2026 es <b>${pct(v,1)}</b> respecto del aprobado para 2025 (ley contra ley).`,
     `Entre las áreas grandes, la que más creció es <b>${esc(up.j.name)}</b> (${pct(up.c,0)}) y la que más cayó es <b>${esc(dn.j.name)}</b> (${pct(dn.c,0)}).`,
     `De cada $100 del presupuesto 2026, <b>$${Math.round(pers*100)} se van en sueldos</b> del sector público.`,
@@ -1151,7 +1174,7 @@ function renderHome(){
 function setInsight(sec,html){ const s=document.getElementById(sec); if(!s) return; let el=s.querySelector('.insight'); if(!el){ el=document.createElement('div'); el.className='insight'; const h=s.querySelector('.sec-head'); h.after(el); } el.innerHTML='<b class="k">En pocas palabras</b>'+html; }
 function renderInsights(){
   const [ya,yb]=pair(); const m=S.metric;
-  setInsight('p2027',`El proyecto pide <b>${fmtMoney(D.ley['2027'])}</b>, ${pct(real(D.ley['2027'],'2027')/D.ley['2026']-1,1)} real frente a la ley 2026 pero solo ${pct(D.ley['2027']/(D.p27.gastos.c26[12]*1e6)/(A['2027']/A['2026'])-1,1)} frente a lo que el propio Ministerio estima gastar en 2026: buena parte del aumento contra la ley es la ampliación que ya ocurrió durante 2026. Crecen sobre todo los servicios económicos (obra vial y de infraestructura) y cae la inversión directa de la Administración Central.`);
+  setInsight('p2027',`El proyecto pide <b>${fmtMoney(D.ley['2027'])}</b>, ${pct(real(D.ley['2027'],'2027')/D.ley['2026']-1,1)} real frente a la ley 2026 pero solo ${pct(D.ley['2027']/(D.p27.gastos.c26[12]*1e6)/(A['2027']/A['2026'])-1,1)} real frente a lo que el propio Ministerio estima gastar en 2026: buena parte del aumento contra la ley es la ampliación que ya ocurrió durante 2026. Crecen sobre todo los servicios económicos (obra vial y de infraestructura) y cae la inversión directa de la Administración Central.`);
   const rows=jurs.map(j=>({j,a:mv(j,ya),b:mv(j,yb)})).filter(r=>r.a>5e9&&r.b>0).map(r=>({...r,c:change(r.a,r.b,ya,yb,m)})).sort((a,b)=>b.c-a.c);
   if(rows.length){ const up=rows[0],dn=rows[rows.length-1]; setInsight('ganadores',`Comparando ${yl(yb)} con ${yl(ya)} (${MLAB[m].toLowerCase()}, ${ULAB[S.unit].toLowerCase()}), el área que más ganó es <b>${esc(up.j.name)}</b> (${fmtChg(up.c)}) y la que más perdió es <b>${esc(dn.j.name)}</b> (${fmtChg(dn.c)}). Tocá cualquier barra para ver sus programas.`); }
   const ty=yb==='2026p'?'2026':yb; const big=jurs.map(j=>({j,v:mv(j,ty)})).sort((a,b)=>b.v-a.v); const tot=d3.sum(big,x=>x.v);
